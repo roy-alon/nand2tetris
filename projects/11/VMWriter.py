@@ -42,8 +42,21 @@ class VMWriter:
         "OR": "or",
         "NOT": "not",
         "SHIFTLEFT": "shiftleft",
-        "SHIFTRIGHT": "shiftright"
+        "SHIFTRIGHT": "shiftright",
+        "MULT": "call Math.multiply 2",
+        "DIV": "call Math.divide 2",
+        "+" : "add",
+        "-" : "sub",
+        "*" : "call Math.multiply 2",
+        "/" : "call Math.divide 2",
+        "&" : "and",
+        "|" : "or",
+        "<" : "lt",
+        ">" : "gt",  
+        "=" : "eq",
+        "~" : "not",
         }
+        
 
 
     def write_push(self, segment: str, index: int) -> None:

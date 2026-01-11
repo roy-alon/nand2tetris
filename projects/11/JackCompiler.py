@@ -25,7 +25,16 @@ def compile_file(
     # Your code goes here!
     # This function should be relatively similar to "analyze_file" in
     # JackAnalyzer.py from the previous project.
-    pass
+    tokenizer = JackTokenizer(input_file)
+    symbol_table = SymbolTable()
+    vm_writer = VMWriter(output_file)
+    engine = CompilationEngine(tokenizer, symbol_table, vm_writer, output_file)
+    
+    # Start with first token
+    if engine.tokenizer.has_more_tokens():
+        engine.tokenizer.advance()
+        # Compile the entire class (which is the root structure)
+        engine.compile_class()
 
 
 if "__main__" == __name__:
