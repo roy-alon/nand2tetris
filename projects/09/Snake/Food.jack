@@ -1,0 +1,81 @@
+class Food{
+    field int x;
+    field int y;
+    field int pulse;
+
+    /** constructor */
+    constructor Food new() {
+        let x = Random.getRndX();
+        let y = Random.getRndY();
+        let pulse = 0;
+        return this;
+    }
+
+    
+    method void relocate(Snake snake, int difficulty) {
+        var boolean valid;
+        let valid = false;
+
+        
+        while (~valid) {
+            let x = Random.getRndX();
+            let y = Random.getRndY();
+            let valid = true;
+
+            
+            if (snake.isAt(0, x, y)) { let valid = false; }
+
+            
+            if ((x > 19) & (x < 31) & (y = 12)) { let valid = false; }
+
+            
+            if (difficulty > 1) {
+                if ((x = 10) & (y > 4) & (y < 16)) { let valid = false; }
+            }
+
+            
+            if (difficulty > 2) {
+                if ((x = 40) & (y > 4) & (y < 16)) { let valid = false; }
+            }
+        }
+        return;
+    }
+    
+    method int getScreenCoardinations(int number){
+        return (number+1) * 10;
+    }
+
+    
+    method void draw() {
+        var int screenX, screenY;
+        let screenX = getScreenCoardinations(x);
+        let screenY = getScreenCoardinations(y);
+
+        
+        if (pulse = 0) {
+            do Screen.drawCircle(screenX + 5, screenY + 5, 4);
+            let pulse = 1;
+        }
+        else {
+            do Screen.drawCircle(screenX + 5, screenY + 5, 3); 
+            let pulse = 0;
+        }
+
+
+        do Screen.drawLine(screenX + 5, screenY, screenX + 5, screenY - 2);
+        return;
+    }
+
+    method boolean isEaten(int headX, int headY){
+        
+        if ((x = headX) & (y = headY)) {
+            return true;
+        }
+        return false;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

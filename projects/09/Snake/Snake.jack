@@ -1,0 +1,225 @@
+class Snake {
+    field Array xs;
+    field Array ys;
+    field int length;
+    field int head;
+
+    /* Creates a Snake. */
+    constructor Snake new() {
+        let xs = Array.new(100);       
+        let ys = Array.new(100);  
+        let length = 3; 
+        let head = 0; // head index
+
+        let xs[0] = 13;
+        let ys[0] = 2;
+
+        let xs[1] = 13;
+        let ys[1] = 1;
+
+        let xs[2] = 13;
+        let ys[2] = 0;
+
+        return this;
+    }
+    
+    /** Accessors. */
+    method int getHeadX(){
+        return xs[head];
+    }
+
+    method int getHeadY(){
+        return ys[head];
+    }
+
+    method int getLength(){
+        return length;
+    }
+
+    /** Draw the snake */
+    method int getScreenCoardinations(int number){
+        return (number+1) * 10;
+    }
+
+    method void drawPart(int x, int y) {
+        var int x_index;
+        var int y_index;
+
+        let x_index = getScreenCoardinations(x);
+        let y_index = getScreenCoardinations(y);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_index, y_index, x_index+9, y_index+9);
+
+        return;
+    }
+
+    method void drawHead(int x, int y) {
+        var int screenX, screenY;
+        let screenX = getScreenCoardinations(x);
+        let screenY = getScreenCoardinations(y);
+
+        do Screen.setColor(true);
+        do Screen.drawRectangle(screenX, screenY, screenX + 9, screenY + 9);
+        
+        do Screen.setColor(false); 
+        do Screen.drawPixel(screenX + 2, screenY + 3);
+        do Screen.drawPixel(screenX + 7, screenY + 3);
+        
+        do Screen.setColor(true); 
+        return;
+    }
+
+    method void draw() {
+        var int i;
+        let i = 1;
+        while (i < length) {
+             do drawPart(xs[i], ys[i]);
+             let i = i + 1;
+        }
+        do drawHead(xs[0], ys[0]);
+        return;
+    }
+
+    // move snake
+    method void moveUp(){
+        var int new_x;
+        var int new_y;
+        var int i;
+
+        let new_x = getHeadX();
+        let new_y = getHeadY() - 1;
+        let i = getLength() - 1;
+
+        while (i > 0){
+            let xs[i] = xs[i-1];
+            let ys[i] = ys[i-1];
+
+            let i = i - 1;
+        }
+
+        let xs[0] = new_x;
+        let ys[0] = new_y;
+
+        return;
+    }
+
+    method void moveDown(){
+        var int new_x;
+        var int new_y;
+        var int i;
+
+        let new_x = getHeadX();
+        let new_y = getHeadY() + 1;
+        let i = getLength() - 1;
+
+        while (i > 0){
+            let xs[i] = xs[i-1];
+            let ys[i] = ys[i-1];
+
+            let i = i - 1;
+        }
+
+        let xs[0] = new_x;
+        let ys[0] = new_y;
+
+        return;
+    }
+
+    method void moveLeft(){
+        var int new_x;
+        var int new_y;
+        var int i;
+
+        let new_x = getHeadX() - 1;
+        let new_y = getHeadY();
+        let i = getLength() - 1;
+
+        while (i > 0){
+            let xs[i] = xs[i-1];
+            let ys[i] = ys[i-1];
+
+            let i = i - 1;
+        }
+
+        let xs[0] = new_x;
+        let ys[0] = new_y;
+
+        return;
+    }
+
+    method void moveRight(){
+        var int new_x;
+        var int new_y;
+        var int i;
+
+        let new_x = getHeadX() + 1;
+        let new_y = getHeadY();
+        let i = getLength() - 1;
+
+        while (i > 0){
+            let xs[i] = xs[i-1];
+            let ys[i] = ys[i-1];
+
+            let i = i - 1;
+        }
+
+        let xs[0] = new_x;
+        let ys[0] = new_y;
+
+        return;
+    }
+
+    method void move(int direction){
+        if (direction = 1) { do moveUp(); }
+        if (direction = 2) { do moveDown(); }
+        if (direction = 3) { do moveLeft(); }
+        if (direction = 4) { do moveRight(); }
+
+        return;
+    }
+
+    /** grow */
+    method void grow(int direction){
+        var int tail_x;
+        var int tail_y;
+
+        let tail_x = xs[length - 1];
+        let tail_y = ys[length - 1];
+
+        do move(direction);
+        
+        let xs[length] = tail_x;
+        let ys[length] = tail_y;
+        let length = length + 1;
+
+        return;
+    }
+
+    method boolean isAt(int start ,int x, int y){
+        var int i;
+        let i = start;
+
+        
+        while (i < length){ 
+            
+            if ((xs[i] = x) & (ys[i] = y)) {
+                return true;
+            }
+            let i = i + 1;
+        }
+        return false;
+    }
+
+    /** checks if the snake hits itself */
+    method boolean hitsSelf(){
+        return isAt(1, xs[0], ys[0]);
+    }
+
+    method void dispose() {
+        do xs.dispose();
+        do ys.dispose();
+        do Memory.deAlloc(this);
+
+        return;
+    }
+}

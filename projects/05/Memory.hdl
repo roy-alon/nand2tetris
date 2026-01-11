@@ -1,0 +1,58 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+
+/**
+ROM32K(address=,out=). Instruction memory of the Hack platform (built-in).
+Screen(in=,load=,address=,out=). Screen memory map (built-in).
+Keyboard(out=). Keyboard memory map (built-in).
+*/
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Routes memory access to RAM (0-16K), Screen (16K-24K), or Keyboard (24K)
+    
+    // Route write signal: bit 14 splits RAM from Screen/Keyboard
+    DMux(in=load, sel=address[14], a=loadram, b=loadscreenkey);
+    // Bit 13 splits Screen from Keyboard
+    DMux(in=loadscreenkey, sel=address[13], a=loadscreen, b=loadkey);
+    
+    RAM16K(in=in,load=loadram, address=address[0..13], out=ramout);
+    Screen(in=in, load=loadscreen, address=address[0..12], out=screenout);
+    Keyboard(out=keyboardraw);
+
+    // Check if address is keyboard (0x6000 = bits 14,13=1, rest=0)
+    Or8Way(in[0]=address[0], in[1]=address[1], in[2]=address[2], in[3]=address[3], 
+           in[4]=address[4], in[5]=address[5], in[6]=address[6], in[7]=address[7], out=orlow);
+    Or8Way(in[0]=address[8], in[1]=address[9], in[2]=address[10], in[3]=address[11], 
+           in[4]=address[12], in[5]=false, in[6]=false, in[7]=false, out=orhigh);
+    Or(a=orlow, b=orhigh, out=notkeyboard);
+    Mux16(a=keyboardraw, b=false, sel=notkeyboard, out=keyboardout);
+
+    // Route read output back
+    Mux16(a=screenout, b=keyboardout, sel=address[13], out=keyscreenout);
+    Mux16(a=ramout, b=keyscreenout, sel=address[14], out=out); 
+}

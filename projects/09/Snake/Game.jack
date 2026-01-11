@@ -1,0 +1,319 @@
+class Game{
+    field Snake snake;
+    field Food food;
+    field boolean exit;
+    field int direction; // 0=none, 1=up, 2=down, 3=left, 4=right
+    field int wait_time; 
+    field int difficulty;
+
+    constructor Game new(){
+        let snake = Snake.new(); 
+        let food = Food.new();
+        let exit = false;
+        let direction = 0;
+        let wait_time = 15; 
+        return this;
+    }
+
+    method void run() {
+        var char key;
+        var int i;
+
+        do intro(); 
+
+        while (~exit) {
+            do gameTurn();
+            let i = 0;
+            while ((i < wait_time) & (~exit)) { 
+                let key = Keyboard.keyPressed();
+                if (key = 81)  { let exit = true; }     // q
+                if (key = 131) { let direction = 1; }   // up
+                if (key = 133) { let direction = 2; }   // down
+                if (key = 130) { let direction = 3; }   // left
+                if (key = 132) { let direction = 4; }   // right
+                
+                do Sys.wait(10);
+                let i = i + 1;
+            }
+        }
+
+        
+        do deathAnimation();
+        do gameOver();
+        return;
+    }
+
+    
+    method void intro() {
+        var char key;
+        var boolean selected;
+        var int menuResult; 
+        
+        
+        let menuResult = Menu.showMainMenu();
+        
+
+        let selected = false;
+
+        do Screen.clearScreen();
+        
+        do Output.moveCursor(8, 27);
+        do Output.printString("DIFFICULTY"); 
+        do Output.moveCursor(10, 20);
+        do Output.printString("Select Difficulty Level:");
+        do Output.moveCursor(12, 22);
+        do Output.printString("1 - Easy (1 Obstacle)");
+        do Output.moveCursor(13, 22);
+        do Output.printString("2 - Medium (2 Obstacles)");
+        do Output.moveCursor(14, 22);
+        do Output.printString("3 - Hard (3 Obstacles)");
+
+        while (~selected) {
+            let key = Keyboard.keyPressed();
+            
+            
+            if (key = 49) { 
+                let wait_time = 20;
+                let difficulty = 1; 
+                let selected = true; 
+            }
+            
+            if (key = 50) { 
+                let wait_time = 12;
+                let difficulty = 2; 
+                let selected = true; 
+            }
+            
+            if (key = 51) { 
+                let wait_time = 5;
+                let difficulty = 3; 
+                let selected = true; 
+            }
+        }
+        do Screen.clearScreen();
+        return;
+    }
+
+    method void gameTurn(){
+        do snake.move(direction);
+        
+        if(checkEat()){
+            do snake.grow(direction);
+            
+            do food.relocate(snake, difficulty);
+        }
+        
+        if(checkCollision()){
+            let exit = true;
+            return; 
+        }
+        
+        do drawGame();
+        return;
+    }
+
+    method boolean checkEat(){
+        if( food.isEaten(snake.getHeadX(), snake.getHeadY()) ){
+            return true;
+        }
+        else{
+            return false;
+        } 
+    }
+
+    method boolean checkCollision(){
+        var int sh_x, sh_y;
+        let sh_x = snake.getHeadX();
+        let sh_y = snake.getHeadY();
+
+        
+        if(sh_x > 49 | sh_x < 0 | sh_y > 23 | sh_y < 0 | snake.hitsSelf()){
+            return true;
+        }
+
+        
+        
+        if ((sh_x > 19) & (sh_x < 31) & (sh_y = 12)) { return true; }
+
+        if (difficulty > 1) {
+            if ((sh_x = 10) & (sh_y > 4) & (sh_y < 16)) { return true; }
+        }
+
+        if (difficulty > 2) {
+            if ((sh_x = 40) & (sh_y > 4) & (sh_y < 16)) { return true; }
+        }
+
+        return false;
+    }
+
+    method void drawGame() {
+        do Screen.clearScreen();
+        
+        do Screen.setColor(true);
+        do Screen.drawLine(0, 0, 511, 0);       
+        do Screen.drawLine(0, 0, 0, 255);       
+        do Screen.drawLine(0, 255, 511, 255);   
+        do Screen.drawLine(511, 0, 511, 255);   
+
+        
+        do Screen.drawRectangle(210, 130, 310, 140);
+
+        
+        if (difficulty > 1) {
+            do Screen.drawRectangle(110, 60, 120, 160);
+        }
+
+        
+        if (difficulty > 2) {
+            do Screen.drawRectangle(410, 60, 420, 160);
+        }
+
+        do snake.draw();
+        do food.draw();
+        return;
+    }
+    
+    method void gameOver() {
+        var char key;
+        var String msg;
+        var int score;
+
+        do Screen.clearScreen();
+
+        let msg = "GAME OVER";
+        do Output.moveCursor(10, 27);
+        do Output.printString(msg);
+        do msg.dispose();
+
+        let score = snake.getLength() - 3;
+        
+        let score = Math.multiply(score, 10);
+        
+        do Output.moveCursor(12, 27);
+        do Output.printString("Final Score: ");
+        do Output.printInt(score);
+        
+        do Output.moveCursor(14, 20);
+        do Output.printString("Press any key to exit");
+
+        
+        do Sys.wait(500);
+
+        while (key = 0) {
+            let key = Keyboard.keyPressed();
+        }
+        return;
+    }
+
+    method void dispose(){
+        do snake.dispose();
+        do food.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // Complex death animation with boundary safety checks
+    method void deathAnimation() {
+        var int i, r;
+        var int headX, headY;
+        var int randX, randY, x2, y2;
+        var int maxR, distRight, distLeft, distBottom, distTop;
+        
+        // Step 1: Calculate head center position in pixels
+        let headX = (snake.getHeadX() * 10) + 5; 
+        let headY = (snake.getHeadY() * 10) + 5;
+
+        // Safety: ensure center is within screen bounds
+        if (headX > 511) { let headX = 511; }
+        if (headX < 0) { let headX = 0; }
+        if (headY > 255) { let headY = 255; }
+        if (headY < 0) { let headY = 0; }
+
+        // Calculate max radius allowed without hitting screen edges
+        let distRight = 511 - headX;
+        let distLeft = headX;
+        let distBottom = 255 - headY;
+        let distTop = headY;
+
+        // Find the smallest distance to a wall
+        let maxR = distRight;
+        if (distLeft < maxR) { let maxR = distLeft; }
+        if (distBottom < maxR) { let maxR = distBottom; }
+        if (distTop < maxR) { let maxR = distTop; }
+        
+        // Cap the radius so it doesn't get too large covering the whole screen
+        if (maxR > 60) { let maxR = 60; }
+
+        // Step 2: Shockwave effect (expanding circles)
+        // Only draw if we have enough space for at least a small circle
+        if (maxR > 5) {
+            let r = 2;
+            while (r < maxR) {
+                do Screen.setColor(true);
+                do Screen.drawCircle(headX, headY, r);
+                
+                do Screen.setColor(false);
+                if (r > 2) {
+                    do Screen.drawCircle(headX, headY, r - 2);
+                }
+                
+                do Sys.wait(10);
+                let r = r + 5;
+            }
+        } else {
+            // Fallback for tight spaces (just a flash)
+            do Screen.setColor(false);
+            do Screen.drawCircle(headX, headY, 3);
+            do Sys.wait(100);
+        }
+
+        // Step 3: Glitch / Static noise effect
+        let i = 0;
+        while (i < 40) {
+            do Screen.setColor(true);
+            
+            // Generate random coordinates
+            let randX = Random.randRange(0, 500);
+            let randY = Random.randRange(0, 245);
+            
+            // Draw random lines
+            let x2 = Random.randRange(0, 511);
+            let y2 = Random.randRange(0, 255);
+            do Screen.drawLine(randX, randY, x2, y2);
+            
+            // Draw random glitch blocks
+            // Use rigorous boundary checks for rectangles
+            if (randX < 490) { 
+                let x2 = randX + 15;
+                let y2 = randY + 6;
+                
+                // Clamp coordinates to screen limits to prevent ERR9
+                if (x2 > 511) { let x2 = 511; }
+                if (y2 > 255) { let y2 = 255; }
+                
+                do Screen.drawRectangle(randX, randY, x2, y2);
+            }
+            
+            do Sys.wait(20);
+            let i = i + 1;
+        }
+
+        // Step 4: Shutters wipe effect
+        let i = 0;
+        do Screen.setColor(false); // White color to erase
+        while (i < 512) {
+            let x2 = i + 10;
+            // Clamp x2 to screen width
+            if (x2 > 511) { let x2 = 511; }
+            
+            do Screen.drawRectangle(i, 0, x2, 255);
+            
+            do Sys.wait(5);
+            let i = i + 15;
+        }
+        
+        do Screen.clearScreen();
+        do Sys.wait(200);
+        return;
+    }
+}

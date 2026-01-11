@@ -1,0 +1,110 @@
+/**
+ * The Menu class handles the game's start screen, help screen, and graphical titles.
+ * It helps separating the UI logic from the game logic.
+ */
+class Menu {
+
+    /** Draws a graphical "SNAKE" logo using rectangles */
+    function void drawLogo() {
+        do Screen.setColor(true);
+        
+        
+        do Screen.drawRectangle(180, 40, 240, 50);  // Top
+        do Screen.drawRectangle(180, 40, 190, 70);  // Top-Left
+        do Screen.drawRectangle(180, 60, 240, 70);  // Middle
+        do Screen.drawRectangle(230, 60, 240, 90);  // Bottom-Right
+        do Screen.drawRectangle(180, 80, 240, 90);  // Bottom
+
+        
+        do Screen.drawRectangle(260, 50, 300, 80); // Head
+        do Screen.setColor(false);
+        do Screen.drawCircle(270, 60, 3); // Eye 1
+        do Screen.drawCircle(290, 60, 3); // Eye 2
+        do Screen.setColor(true);
+        
+        
+        do Screen.drawRectangle(300, 60, 320, 70);
+        do Screen.drawRectangle(320, 60, 330, 80);
+        do Screen.drawRectangle(330, 70, 350, 80);
+
+        return;
+    }
+
+    /** Shows the help instructions */
+    function void showHelp() {
+        var char key;
+        do Screen.clearScreen();
+        
+        
+        do Output.moveCursor(2, 26);
+        do Output.printString("INSTRUCTIONS");
+        
+        do Output.moveCursor(5, 5);
+        do Output.printString("The goal is to eat as many apples as possible.");
+        
+        do Output.moveCursor(7, 5);
+        do Output.printString("Controls:");
+        do Output.moveCursor(8, 10);
+        do Output.printString("[Arrow Keys] - Move the snake");
+        do Output.moveCursor(9, 10);
+        do Output.printString("[Q] - Quit the game during play");
+
+        do Output.moveCursor(11, 5);
+        do Output.printString("Rules:");
+        do Output.moveCursor(12, 10);
+        do Output.printString("1. Do not hit the walls.");
+        do Output.moveCursor(13, 10);
+        do Output.printString("2. Do not hit your own tail.");
+        do Output.moveCursor(14, 10);
+        do Output.printString("3. Watch out for obstacles (in Hard mode)!");
+
+        do Output.moveCursor(18, 15);
+        do Output.printString("Press [B] to go back to Menu...");
+
+        
+        let key = 0;
+        while (~(key = 66)) { // 66 is 'B'
+            let key = Keyboard.keyPressed();
+        }
+        
+        return;
+    }
+
+    /** * Display the main menu and return the user selection.
+     * Returns: 1 for Start Game, 2 for Help (internal loop), 3 for Credits (optional)
+     */
+    function int showMainMenu() {
+        var char key;
+        var boolean exitMenu;
+        
+        let exitMenu = false;
+
+        while (~exitMenu) {
+            do Screen.clearScreen();
+            do Menu.drawLogo(); 
+
+            do Output.moveCursor(12, 25);
+            do Output.printString("MAIN MENU");
+            
+            do Output.moveCursor(15, 20);
+            do Output.printString("Press [S] to Start Game");
+            
+            do Output.moveCursor(17, 20);
+            do Output.printString("Press [H] for Help / Instructions");
+
+            let key = 0;
+            while (key = 0) {
+                let key = Keyboard.keyPressed();
+            }
+
+            if ((key = 83) | (key = 115)) { // S or s
+                return 1; 
+            }
+
+            if ((key = 72) | (key = 104)) { // H or h
+                do Menu.showHelp();
+            }
+        }
+        return 0;
+    }
+}

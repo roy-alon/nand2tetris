@@ -1,0 +1,42 @@
+class Random{
+    static int seed;
+
+    function void setSeed(int new_seed) {
+        let seed = new_seed;
+        return;
+    }
+
+    function int rand() {
+        let seed = (seed * 20251) + 12345;
+
+        if (seed < 0) {
+            let seed = -seed;
+        }
+
+        return seed;
+    }
+
+    function int randRange(int min, int max){
+        var int range;
+        var int rand_val;
+        var int scaled;
+
+        let range = (max - min) + 1;
+        let rand_val = Random.rand();
+
+        let scaled = rand_val - ((rand_val / range) * range);
+
+        return (min + scaled);
+    }
+
+    // for snakes
+    function int getRndX(){
+        
+        return Random.randRange(0, 49);
+    }
+
+    function int getRndY(){
+        
+        return Random.randRange(0, 23);
+    }
+}
